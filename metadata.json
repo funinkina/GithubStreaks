@@ -1,0 +1,9 @@
+{
+    "description": "See your weekly github streak in the top bar",
+    "name": "Github Streaks",
+    "shell-version": [ "47" ],
+    "url": "https://github.com/funinkina",
+    "uuid": "GithubStreak@funinkina",
+    "version": "1",
+    "version-name": "0.1"
+}
