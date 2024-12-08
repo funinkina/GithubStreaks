@@ -1,10 +1,10 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import Adw from 'gi://Adw';
 
-import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 
-export default class ExamplePreferences extends ExtensionPreferences {
+export default class GithubStreakPreferences extends ExtensionPreferences {
     /**
      * This class is constructed once when your extension preferences are
      * about to be opened. This is a good time to setup translations or anything
@@ -42,24 +42,36 @@ export default class ExamplePreferences extends ExtensionPreferences {
      * @param {Adw.PreferencesWindow} window - the preferences window
      */
     fillPreferencesWindow(window) {
-        // Create a preferences page, with a single group
         const page = new Adw.PreferencesPage({
-            title: _('General'),
+            title: _('Settings'),
             icon_name: 'dialog-information-symbolic',
         });
         window.add(page);
 
         const group = new Adw.PreferencesGroup({
-            title: _('Appearance'),
-            description: _('Configure the appearance of the extension'),
+            title: _('GitHub Configuration'),
+            description: _('Configure your GitHub credentials'),
         });
         page.add(group);
 
-        // Create a new preferences row
-        const row = new Adw.SwitchRow({
-            title: _('Show Indicator'),
-            subtitle: _('Whether to show the panel indicator'),
+        // Create an entry for GitHub username
+        const usernameRow = new Adw.EntryRow({
+            title: _('GitHub Username'),
+            text: this.settings.get_string('github-username') || ''
         });
-        group.add(row);
+        usernameRow.connect('changed', entry => {
+            this.settings.set_string('github-username', entry.get_text());
+        });
+        group.add(usernameRow);
+
+        // Create an entry for GitHub token
+        const tokenRow = new Adw.PasswordEntryRow({
+            title: _('GitHub Token'),
+            text: this.settings.get_string('github-token') || ''
+        });
+        tokenRow.connect('changed', entry => {
+            this.settings.set_string('github-token', entry.get_text());
+        });
+        group.add(tokenRow);
     }
 }

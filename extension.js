@@ -3,13 +3,16 @@ const { St, Clutter } = imports.gi;
 const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+const GLib = imports.glib;
 
 let commitIndicator;
+let settings;
 
 const CommitIndicator = class CommitIndicator extends PanelMenu.Button {
     constructor() {
         super(0.0, 'Commit Indicator');
+
+        settings = ExtensionUtils.getSettings('org.gnome.shell.extensions.githubstreak');
 
         this.boxLayout = new St.BoxLayout({
             style_class: 'commit-boxes'
@@ -27,14 +30,28 @@ const CommitIndicator = class CommitIndicator extends PanelMenu.Button {
         }
 
         this.add_child(this.boxLayout);
+
+        // Update commits initially and every hour
         this.updateCommits();
+        this._updateTimeoutId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 3600, () => {
+            this.updateCommits();
+            return GLib.SOURCE_CONTINUE;
+        });
+
+        // Listen for settings changes
+        this._settingsChangedId = settings.connect('changed', () => {
+            this.updateCommits();
+        });
     }
 
     async updateCommits() {
         try {
-            // Replace with your GitHub username and Personal Access Token
-            const username = keys.env.USERNAME;
-            const token = keys.env.TOKEN;
+            const username = settings.get_string('github-username');
+            const token = settings.get_string('github-token');
+
+            if (!username || !token) {
+                return;
+            }
 
             const today = new Date();
             const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -77,16 +94,23 @@ const CommitIndicator = class CommitIndicator extends PanelMenu.Button {
     }
 
     destroy() {
+        if (this._updateTimeoutId) {
+            GLib.source_remove(this._updateTimeoutId);
+        }
+        if (this._settingsChangedId) {
+            settings.disconnect(this._settingsChangedId);
+        }
         super.destroy();
     }
 };
 
 function init() {
+    ExtensionUtils.initTranslations();
 }
 
 function enable() {
     commitIndicator = new CommitIndicator();
-    Main.panel.addToStatusArea('commit-indicator', commitIndicator);
+    Main.panel.addToStatusArea('commit-indicator', commitIndicator, 0, 'left');
 }
 
 function disable() {

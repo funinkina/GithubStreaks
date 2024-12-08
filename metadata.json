@@ -1,9 +1,9 @@
 {
     "description": "See your weekly github streak in the top bar",
     "name": "Github Streaks",
-    "shell-version": [ "45", "46", "47" ],
+    "shell-version": ["46", "47"],
     "url": "https://github.com/funinkina",
     "uuid": "GithubStreak@funinkina",
-    "version": "1",
-    "version-name": "0.1"
+    "version": "2",
+    "settings-schema": "org.gnome.shell.extensions.githubstreak"
 }
